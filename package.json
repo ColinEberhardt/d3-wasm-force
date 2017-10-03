@@ -1,0 +1,22 @@
+{
+  "name": "assemblyscript-demo",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build-wasm": "asc src/force.ts -o build/force.wasm",
+    "build-ts": "tsc",
+    "build": "npm run build-ts & npm run build-wasm"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@types/d3-force": "^1.0.7",
+    "assemblyscript": "^0.3.0",
+    "assemblyscript-loader": "^0.3.0",
+    "d3-force": "^1.0.6",
+    "systemjs": "^0.20.19",
+    "typescript": "^2.5.3"
+  }
+}
