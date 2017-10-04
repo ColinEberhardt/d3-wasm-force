@@ -1,0 +1,11 @@
+{
+  "include": [
+    "*.ts"
+  ],
+  "compilerOptions": {
+    "sourceMap": true,
+    "module": "commonjs",
+    "outDir": "../../build/",
+    "target": "es6"
+  }
+}

@@ -1,7 +1,6 @@
-import {forceSimulation} from './forceSimulation';
-import {manyBody} from './manyBody';
+export { simulation as forceSimulation } from './simulation';
+export { manyBody as forceManyBody } from './manyBody';
+export { link as forceLink } from './link';
+export { center as forceCenter } from './center';
 
-export const d3wasm = {
-  forceSimulation,
-  manyBody
-};
+export { load } from './wasmLoader';

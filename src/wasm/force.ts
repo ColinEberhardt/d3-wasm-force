@@ -1,36 +1,39 @@
-class Node {
+class Node  {
   x: f64;
   y: f64;
   vx: f64;
   vy: f64;
+  links: f64;
   constructor(x: f64, y: f64, vx: f64, vy: f64) {
     this.x = x;
     this.y = y;
     this.vx = vx;
     this.vy = vy;
+    this.links = 0;
   }
 }
 
 class NodeLink {
   source: Node;
   target: Node;
-  strength: f64;
-  constructor(source: Node, target: Node, strength: f64) {
+  bias: f64;
+  constructor(source: Node, target: Node) {
     this.source = source;
     this.target = target;
-    this.strength = strength;
+    this.bias = 0;
   }
 }
 
-const nodeArray: Float64Array = new Float64Array(1000);
+
+let nodeArray: Float64Array = new Float64Array(1000);
 let nodeArrayLength: i32;
 let typedNodeArray: Array<Node>
 
-const linkArray: Uint32Array = new Uint32Array(1000);
+let linkArray: Uint32Array = new Uint32Array(1000);
 let linkArrayLength: i32;
 let typedLinkArray: Array<NodeLink>
 
-const PI: f64 = 3.141592653589793;
+let PI: f64 = 3.141592653589793;
 
 export function sin(x: f64): f64 {
   while (x < -PI) {
@@ -63,8 +66,8 @@ export function cos(x: f64): f64 {
   return sin(x - PI / 2);
 }
 
-const initialRadius: f64 = 10.0;
-const initialAngle: f64 = PI * (3.0 - sqrt(5.0));
+let initialRadius: f64 = 10.0;
+let initialAngle: f64 = PI * (3.0 - sqrt(5.0));
 
 export function readNodeArray(): void {
   typedNodeArray = new Array<Node>(nodeArrayLength);
@@ -81,16 +84,18 @@ export function readNodeArray(): void {
 
   typedLinkArray = new Array<NodeLink>(linkArrayLength);
   for (let i: i32 = 0; i < linkArrayLength; i++) {
-    const idx: i32 = i * 3;
-    const sourceIndex: i32 = linkArray[idx];
-    const targetIndex: i32 = linkArray[idx + 1];
-    const strength: i32 = linkArray[idx + 1];
-    const link: NodeLink = new NodeLink(
-      typedNodeArray[sourceIndex],
-      typedNodeArray[targetIndex],
-      30
-    );
-    typedLinkArray[i] = link;
+    const idx: i32 = i * 2;
+    const source: Node = typedNodeArray[linkArray[idx]];
+    const target: Node = typedNodeArray[linkArray[idx + 1]];
+    const typedLink: NodeLink = new NodeLink(source, target);    
+    typedLinkArray[i] = typedLink;
+    typedLink.source.links = typedLink.source.links + 1.0;
+    typedLink.target.links = typedLink.target.links + 1.0;
+  }
+
+  for (let i: i32 = 0; i < linkArrayLength; i++) {
+    const typedLink: NodeLink = typedLinkArray[i];
+    typedLink.bias = typedLink.source.links / (typedLink.source.links + typedLink.target.links);
   }
 }
 
@@ -117,6 +122,21 @@ export function initializeNodes(): void {
   }
 }
 
+export function center(): void {
+  let sx: f64 = 0.0;
+  let sy: f64 = 0.0;
+  for (let i: i32 = 0; i < nodeArrayLength; i++) {
+    sx = sx + typedNodeArray[i].x;
+    sy = sy + typedNodeArray[i].y;
+  }
+  sx = sx / (nodeArrayLength as f64);
+  sy = sy / (nodeArrayLength as f64);
+  for (let i: i32 = 0; i < nodeArrayLength; i++) {
+    typedNodeArray[i].x -= sx;
+    typedNodeArray[i].y -= sy;
+  }
+}
+
 export function manyBody(alpha: f64, strength: f64): void {
   for (let i: i32 = 0; i < nodeArrayLength; i++) {
     for (let j: i32 = 0; j < nodeArrayLength; j++) {
@@ -132,6 +152,25 @@ export function manyBody(alpha: f64, strength: f64): void {
         nodeOne.vy = nodeOne.vy + dy * w;
       }
     }
+  }
+}
+
+const distance: f64 = 30;
+
+export function link(alpha: f64): void {
+  for (let i: i32 = 0; i < linkArrayLength; i++) {
+    const link: NodeLink = typedLinkArray[i];
+    let dx: f64 = link.target.x + link.target.vx - link.source.x - link.source.vx;
+    let dy: f64 = link.target.y + link.target.vy - link.source.y - link.source.vy;
+    const length: f64 = sqrt(dx * dx + dy * dy);
+    const strength: f64 = 1 / min(link.target.links, link.source.links);
+    const deltaLength: f64 = (length - distance) / length * strength * alpha;
+    dx = dx * deltaLength;
+    dy = dy * deltaLength;
+    link.target.vx = link.target.vx - dx * link.bias;
+    link.target.vy = link.target.vy - dy * link.bias;
+    link.source.vx = link.source.vx + dx * (1 - link.bias);
+    link.source.vy = link.source.vy + dy * (1 - link.bias);
   }
 }
 

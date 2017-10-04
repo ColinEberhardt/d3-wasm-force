@@ -1,17 +1,45 @@
-import {computer} from './forceLayoutComputer';
-
 export const link: ForceFactory<LinkForce> = () => {
   let strength = -30;
-  let id = (d) => d.index;
-  
+  let nodes: any;
+  let links: any;
+  let id = (n) => n.index;
+  let computer: ForceLayoutComputer;
+
+  const initialize = () => {
+    if (!nodes) return;
+    computer.setLinkArrayLength(links.length);
+    const linkBuffer = computer.getLinkArray();
+    links.forEach((link, index) => {
+      const sourceIndex = nodes.findIndex(n => id(n) == link.source);
+      const targetIndex = nodes.findIndex(n => id(n) == link.target);
+      linkBuffer[index * 2] = sourceIndex;
+      linkBuffer[index * 2 + 1] = targetIndex;
+      link.source = nodes[sourceIndex];
+      link.target = nodes[targetIndex];
+    });
+  }
+
   const link = <LinkForce>((alpha) => {
-    
+    computer.link(alpha);
   });
 
-  link.id = (fn) => {
-    id = fn;
+  link.initialize = (c, n) => {
+    nodes = n;
+    computer = c;
+    initialize();
     return link;
   };
-  
+
+  link.id = (f) => {
+    id = f;
+    return link;
+  }
+
+  link.links = (l) => {
+    links = l;
+    initialize();
+    return link;
+  }
+
   return link;
 };
