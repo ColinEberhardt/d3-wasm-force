@@ -1,5 +1,5 @@
 {
-  "name": "assemblyscript-demo",
+  "name": "d3-wasm-force",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -13,7 +13,6 @@
   "license": "ISC",
   "devDependencies": {
     "assemblyscript": "^0.3.0",
-    "assemblyscript-loader": "^0.3.0",
     "d3-force": "^1.0.6",
     "rimraf": "^2.6.2",
     "rollup": "^0.50.0",
