@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<meta charset='utf-8'>
+<style> 
+.links line {
+  stroke: #999;
+  stroke-opacity: 0.6;
+}
+
+.nodes circle {
+  stroke: #fff;
+  stroke-width: 1.5px;
+}
+</style>
+<svg width='960' height='600'></svg>
+
+<script>
+   // TODO: does this need to be here?
+   window.sqrt = Math.sqrt;
+   window.min = Math.min;
+</script>
+<script src='build/bundle.js'></script>
+<script src='node_modules/d3/build/d3.js'></script>
+<script>
+  var svg = d3.select('svg'),
+    width = +svg.attr('width'),
+    height = +svg.attr('height');
+
+  var color = d3.scaleOrdinal(d3.schemeCategory20);
+
+  d3wasm.load('build/force.wasm')
+    .then(() => {
+
+      d3.json('graph.json', function(error, graph) {
+        if (error) throw error;
+
+        const simulation = d3wasm.forceSimulation(graph.nodes, false)
+          .force('charge', d3wasm.forceManyBody())
+          .force('center', d3wasm.forceCenter(width / 2, height / 2))
+          .force('link', d3wasm.forceLink().links(graph.links).id(d => d.id))
+          .stop();
+       
+        var link = svg.append('g')
+          .attr('class', 'links')
+          .selectAll('line')
+          .data(graph.links)
+          .enter().append('line')
+            .attr('stroke-width', d => Math.sqrt(d.value));
+      
+        var node = svg.append('g')
+            .attr('class', 'nodes')
+          .selectAll('circle')
+          .data(graph.nodes)
+          .enter().append('circle')
+            .attr('r', 5)
+            .attr('fill', d => color(d.group))
+            .call(d3.drag()
+                .on('start', dragstarted)
+                .on('drag', dragged)
+                .on('end', dragended));
+      
+        function ticked() {
+          simulation.tick();
+          link
+              .attr('x1', d => d.source.x)
+              .attr('y1', d => d.source.y)
+              .attr('x2', d => d.target.x)
+              .attr('y2', d => d.target.y);
+      
+          node
+              .attr('cx', d => d.x)
+              .attr('cy', d => d.y);
+        }
+      
+        setInterval(ticked, 50);
+        
+        function dragstarted(d) {
+          if (!d3.event.active) simulation.alphaTarget(0.3).restart();
+          // d.fx = d.x;
+          // d.fy = d.y;
+        }
+
+        function dragged(d) {
+          d.x = d3.event.x;
+          d.y = d3.event.y;
+        }
+
+        function dragended(d) {
+          if (!d3.event.active) simulation.alphaTarget(0);
+          // d.fx = null;
+          // d.fy = null;
+        }
+      });
+  });
+</script>

@@ -2,6 +2,10 @@ interface ForceFactory<T extends Force>  {
   (): T;
 }
 
+interface CenterForceFactory {
+  (sx: number, sy: number): CenterForce;
+}
+
 interface ForceLayoutComputer {
   getNodeArray: () => Float64Array;
   setNodeArrayLength: (number) => void;
@@ -17,7 +21,7 @@ interface ForceLayoutComputer {
   initializeNodes: () => void;
   manyBody: (alpha: number, strength: number) => void;
   link: (alpha: number) => void; 
-  center: () => void;
+  center: (cx: number, cy: number) => void;
 }
 
 
@@ -53,4 +57,6 @@ interface ForceSimulation {
   tick: () => ForceSimulation;
   force: (name: string, force: Force) => ForceSimulation;
   stop: () => ForceSimulation;
+  alphaTarget: (a: number) => ForceSimulation;
+  restart: () => ForceSimulation;
 }

@@ -122,15 +122,14 @@ export function initializeNodes(): void {
   }
 }
 
-export function center(): void {
-  let sx: f64 = 0.0;
-  let sy: f64 = 0.0;
+export function center(x: f64, y: f64): void {
+  let sx: f64 = 0, sy: f64 = 0;
   for (let i: i32 = 0; i < nodeArrayLength; i++) {
     sx = sx + typedNodeArray[i].x;
     sy = sy + typedNodeArray[i].y;
   }
-  sx = sx / (nodeArrayLength as f64);
-  sy = sy / (nodeArrayLength as f64);
+  sx = sx / nodeArrayLength as f64 - x;
+  sy = sy / nodeArrayLength as f64 - y;
   for (let i: i32 = 0; i < nodeArrayLength; i++) {
     typedNodeArray[i].x -= sx;
     typedNodeArray[i].y -= sy;

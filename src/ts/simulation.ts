@@ -7,7 +7,7 @@ export const simulation: ForceSimulationFactory = (nodes, useWasm) => {
   let alpha = 1.0;
   const alphaMin = 0.001;
   const alphaDecay = 1 - Math.pow(alphaMin, 1 / 300);
-  const alphaTarget = 0;
+  let alphaTarget = 0;
   const forces: Force[] = [];
 
   const computer: ForceLayoutComputer = useWasm ?  getAdaptedWasmCode() : force;
@@ -72,6 +72,16 @@ export const simulation: ForceSimulationFactory = (nodes, useWasm) => {
     force.initialize(computer, nodes);
     return simulation;
   };
+
+  simulation.alphaTarget = (a: number) => {
+    alphaTarget = a;
+    return simulation;
+  }
+
+  simulation.restart = () => {
+    alpha = 0.0;
+    return simulation;
+  }
 
   // this simulation implementation does't support internal timers.
   simulation.stop = () => simulation;
