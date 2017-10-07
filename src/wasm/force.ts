@@ -124,12 +124,16 @@ export function initializeNodes(): void {
 
 export function center(x: f64, y: f64): void {
   let sx: f64 = 0, sy: f64 = 0;
+  // TODO: cannot cast integers to floats, the required conversion functions are not exposed
+  // https://github.com/WebAssembly/design/blob/master/Semantics.md#datatype-conversions-truncations-reinterpretations-promotions-and-demotions
+  let nodeCount: f64 = 0;
   for (let i: i32 = 0; i < nodeArrayLength; i++) {
     sx = sx + typedNodeArray[i].x;
     sy = sy + typedNodeArray[i].y;
+    nodeCount = nodeCount + 1;
   }
-  sx = sx / nodeArrayLength as f64 - x;
-  sy = sy / nodeArrayLength as f64 - y;
+  sx = sx / nodeCount - x;
+  sy = sy / nodeCount - y;
   for (let i: i32 = 0; i < nodeArrayLength; i++) {
     typedNodeArray[i].x -= sx;
     typedNodeArray[i].y -= sy;
@@ -146,7 +150,7 @@ export function manyBody(alpha: f64, strength: f64): void {
         const dy: f64 = nodeTwo.y - nodeOne.y;
         const l: f64 = dx * dx + dy * dy;
         const w: f64 = strength * alpha / l;
-        // += doesn't work!
+        // TODO: += doesn't work here!
         nodeOne.vx = nodeOne.vx + dx * w;
         nodeOne.vy = nodeOne.vy + dy * w;
       }
