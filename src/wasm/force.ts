@@ -99,6 +99,15 @@ export function readNodeArray(): void {
   }
 }
 
+// TODO: cannot cast integers to floats, the required conversion functions are not exposed
+// https://github.com/WebAssembly/design/blob/master/Semantics.md#datatype-conversions-truncations-reinterpretations-promotions-and-demotions
+// https://github.com/AssemblyScript/assemblyscript/issues/117#issuecomment-334927010
+function convert(v: i32): f64 {
+  const conversionBuffer: Float64Array = new Float64Array(1);
+  conversionBuffer[0] = v as f64;
+  return conversionBuffer[0];
+}
+
 export function writeNodeArray(): void {
   for (let i: i32 = 0; i < nodeArrayLength; i++) {
     const idx: i32 = i * 4;
@@ -114,7 +123,7 @@ export function initializeNodes(): void {
   for (let i: i32 = 0; i < nodeArrayLength; i++) {
     const node: Node = typedNodeArray[i];
     const radius: f64 = initialRadius * sqrt(i as f64)
-    const angle: f64 = i as f64 * initialAngle;
+    const angle: f64 = convert(i) * initialAngle;
     node.x = radius * sin(angle);
     node.y = radius * cos(angle);
     node.vx = 0;
@@ -124,19 +133,15 @@ export function initializeNodes(): void {
 
 export function center(x: f64, y: f64): void {
   let sx: f64 = 0, sy: f64 = 0;
-  // TODO: cannot cast integers to floats, the required conversion functions are not exposed
-  // https://github.com/WebAssembly/design/blob/master/Semantics.md#datatype-conversions-truncations-reinterpretations-promotions-and-demotions
-  let nodeCount: f64 = 0;
   for (let i: i32 = 0; i < nodeArrayLength; i++) {
     sx = sx + typedNodeArray[i].x;
     sy = sy + typedNodeArray[i].y;
-    nodeCount = nodeCount + 1;
   }
-  sx = sx / nodeCount - x;
-  sy = sy / nodeCount - y;
+  sx = sx / convert(nodeArrayLength) - x;
+  sy = sy / convert(nodeArrayLength) - y;
   for (let i: i32 = 0; i < nodeArrayLength; i++) {
-    typedNodeArray[i].x -= sx;
-    typedNodeArray[i].y -= sy;
+    typedNodeArray[i].x = typedNodeArray[i].x - sx;
+    typedNodeArray[i].y = typedNodeArray[i].y - sy;
   }
 }
 

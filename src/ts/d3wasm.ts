@@ -3,4 +3,4 @@ export { manyBody as forceManyBody } from './manyBody';
 export { link as forceLink } from './link';
 export { center as forceCenter } from './center';
 
-export { load } from './wasmLoader';
+export { loaded } from './wasmAdapter';

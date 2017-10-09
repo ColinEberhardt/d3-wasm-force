@@ -27,13 +27,13 @@
 
   var color = d3.scaleOrdinal(d3.schemeCategory20);
 
-  d3wasm.load('build/force.wasm')
+  d3wasm.loaded
     .then(() => {
 
       d3.json('graph.json', function(error, graph) {
         if (error) throw error;
 
-        const simulation = d3wasm.forceSimulation(graph.nodes, false)
+        const simulation = d3wasm.forceSimulation(graph.nodes, true)
           .force('charge', d3wasm.forceManyBody())
           .force('center', d3wasm.forceCenter(width / 2, height / 2))
           .force('link', d3wasm.forceLink().links(graph.links).id(d => d.id))

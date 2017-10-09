@@ -7,7 +7,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "build-wasm": "asc src/wasm/force.ts -o build/force.wasm",
     "bundle": "rollup --config",
-    "build": "rimraf build/** && npm run build-wasm & npm run bundle"
+    "build": "rimraf build/** && npm run build-wasm && npm run bundle"
   },
   "author": "",
   "license": "ISC",
@@ -17,6 +17,7 @@
     "rimraf": "^2.6.2",
     "rollup": "^0.50.0",
     "rollup-plugin-typescript": "^0.8.1",
+    "rollup-plugin-webassembly": "^1.0.3",
     "typescript": "^2.5.3"
   }
 }

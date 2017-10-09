@@ -1,11 +1,11 @@
 import typescript from 'rollup-plugin-typescript';
+import webassembly from 'rollup-plugin-webassembly';
 
 export default {
   input: './src/ts/d3wasm.ts',
   plugins: [
-    typescript({
-
-    })
+    typescript(),
+    webassembly()
   ],
   output: {
     file: 'build/bundle.js',

@@ -1,4 +1,12 @@
-import { getWasmCode } from './wasmLoader';
+import wasmCode from '../../build/force.wasm';
+
+let wasm: any;
+
+export const loaded = wasmCode()
+  .then(instance => {
+    wasm = instance.exports;
+    return true;
+  });
 
 declare class Float64Array {
   constructor(buffer: Float64Array, offset: number, length: number);
@@ -9,8 +17,7 @@ declare class Uint32Array {
 }
 
 export const getAdaptedWasmCode: (() => ForceLayoutComputer) = () => {
-  const wasm = getWasmCode();
-
+  
   // TODO: wasm is frozen so we cannot proxy! this is a big hack to allow proxying!!!!!!
   const wasm2 = {
     sin: wasm.sin,
@@ -28,8 +35,7 @@ export const getAdaptedWasmCode: (() => ForceLayoutComputer) = () => {
     getLinkArrayLength: wasm.getLinkArrayLength,
     getLinkArray: wasm.getLinkArray
   };
-
-
+  
   return new Proxy(wasm2, {
     get: (target, name) => {
       if (name === 'getNodeArray') {
