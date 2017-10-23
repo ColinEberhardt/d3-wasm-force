@@ -12,8 +12,23 @@ export const simulation: ForceSimulationFactory = (nodes, useWasm) => {
 
   const computer: ForceLayoutComputer = useWasm ?  getAdaptedWasmCode() : force;
 
-  const readNodesFromBuffer = () => {
-    const nodeBuffer = computer.getNodeArray();
+  const executeWasm = (wasmCode) => {
+    
+    let nodeBuffer = computer.getNodeArray();
+    nodes.forEach((node, index) => {
+      nodeBuffer[index * 4] = node.x;
+      nodeBuffer[index * 4 + 1] = node.y;
+      nodeBuffer[index * 4 + 2] = node.vx;
+      nodeBuffer[index * 4 + 3] = node.vy;
+    })
+
+    computer.readNodeArray();
+  
+    wasmCode();
+    
+    computer.writeNodeArray();
+
+    nodeBuffer = computer.getNodeArray();
     nodes.forEach((node, index) => {
       node.x = nodeBuffer[index * 4];
       node.y = nodeBuffer[index * 4 + 1];
@@ -22,47 +37,40 @@ export const simulation: ForceSimulationFactory = (nodes, useWasm) => {
     })
   };
 
-  const writeNodesToBuffer = () => {
-    const nodeBuffer = computer.getNodeArray();
-    nodes.forEach((node, index) => {
-      nodeBuffer[index * 4] = node.x;
-      nodeBuffer[index * 4 + 1] = node.y;
-      nodeBuffer[index * 4 + 2] = node.vx;
-      nodeBuffer[index * 4 + 3] = node.vy;
-    })
-  };
-
   computer.setNodeArrayLength(nodes.length);
-  computer.readNodeArray();
-
-  computer.initializeNodes();
   
-  computer.writeNodeArray();
-  readNodesFromBuffer();
-
+  executeWasm(() => {
+    computer.initializeNodes();
+  });
+  
   const simulation = <ForceSimulation> {};
 
   simulation.tick = () => {
 
     alpha += (alphaTarget - alpha) * alphaDecay;
 
-    writeNodesToBuffer();
-    computer.readNodeArray();
+    executeWasm(() => {
+      forces.forEach(force => {
+        force(alpha);
+      })
+    });
 
-    forces.forEach(force => {
-      force(alpha);
-    })
-
-    computer.writeNodeArray();
-    readNodesFromBuffer();
-
-    for (let i = 0; i < nodes.length; ++i) {
-      const node = nodes[i];
-      node.x += node.vx;
-      node.vx *= velocityDecay;
-      node.y += node.vy;
-      node.vy *= velocityDecay;
-    }
+    nodes.forEach((node) => {
+      if (node.fx == null) {
+        node.x += node.vx;
+        node.vx *= velocityDecay;
+      } else {
+        node.x = node.fx;
+        node.vx = 0;
+      }
+      if (node.fy == null) {
+        node.y += node.vy;
+        node.vy *= velocityDecay;
+      } else {
+        node.y = node.fy;
+        node.vy = 0;
+      }
+    });
 
     return simulation;
   };

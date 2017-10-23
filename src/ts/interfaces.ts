@@ -30,6 +30,8 @@ interface NodeDatum {
   y: number;
   vx: number;
   vy: number;
+  fx?: number;
+  fy?: number;
 }
 
 interface Force {
