@@ -33,7 +33,7 @@
       d3.json('graph.json', (error, graph) => {
         if (error) throw error;
 
-        const simulation = d3wasm.forceSimulation(graph.nodes, true)
+        const simulation = d3wasm.forceSimulation(graph.nodes, false)
           .force('charge', d3wasm.forceManyBody())
           .force('center', d3wasm.forceCenter(width / 2, height / 2))
           .force('link', d3wasm.forceLink().links(graph.links).id(d => d.id))
@@ -72,6 +72,7 @@
         }
       
         setInterval(ticked, 50);
+        // ticked();
         
         function dragstarted(d) {
           if (!d3.event.active) simulation.alphaTarget(0.3).restart();

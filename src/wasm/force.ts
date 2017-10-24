@@ -3,7 +3,7 @@ class Node  {
   y: f64;
   vx: f64;
   vy: f64;
-  links: f64;
+  links: f64 = 0;
 
   static size: i32 = 4;
 
@@ -38,10 +38,40 @@ class NodeLink {
   }
 }
 
+class NodeArraySerialiser {
+  array: Float64Array;
+  count: i32;
 
-let nodeArray: Float64Array = new Float64Array(1000);
-let nodeArrayLength: i32;
-let typedNodeArray: Array<Node>
+  read(): Array<Node> {
+    let typedArray: Array<Node> = new Array<Node>(this.count);
+    for (let i: i32 = 0; i < this.count; i++) {
+      const item: Node = new Node();
+      item.read(this.array, i);
+      typedArray[i] = item;
+    }
+    return typedArray;
+  }
+
+  write(typedArray: Array<Node>): void {
+    for (let i: i32 = 0; i < this.count; i++) {
+      typedArray[i].write(this.array, i);
+    }
+  }
+
+  initialise(count: i32): void {
+    this.array = new Float64Array(count * Node.size);
+    this.count = count;
+  }
+}
+
+// bug: cannot just create a new NodeArraySerialiser()!!!
+let node: Array<NodeArraySerialiser> = new Array<NodeArraySerialiser>(1);
+node[0] = new NodeArraySerialiser();
+function nodeArraySerialiser(): NodeArraySerialiser {
+  return node[0];
+}
+
+let typedNodeArray: Array<Node>;
 
 let linkArray: Uint32Array = new Uint32Array(1000);
 let linkArrayLength: i32;
@@ -84,13 +114,8 @@ let initialRadius: f64 = 10.0;
 let initialAngle: f64 = PI * (3.0 - sqrt(5.0));
 
 export function readNodeArray(): void {
-  typedNodeArray = new Array<Node>(nodeArrayLength);
-  for (let i: i32 = 0; i < nodeArrayLength; i++) {
-    const typedNode: Node = new Node()
-    typedNode.read(nodeArray, i);
-    typedNodeArray[i] = typedNode;
-  }
-
+  typedNodeArray = nodeArraySerialiser().read();
+  
   typedLinkArray = new Array<NodeLink>(linkArrayLength);
   for (let i: i32 = 0; i < linkArrayLength; i++) {
     const typedLink: NodeLink = new NodeLink();    
@@ -106,7 +131,7 @@ export function readNodeArray(): void {
     typedLink.target.links = typedLink.target.links + 1.0;
   }
 
-  // compute the bia for each link
+  // compute the bias for each link
   for (let i: i32 = 0; i < linkArrayLength; i++) {
     const typedLink: NodeLink = typedLinkArray[i];
     typedLink.bias = typedLink.source.links / (typedLink.source.links + typedLink.target.links);
@@ -123,14 +148,11 @@ function convert(v: i32): f64 {
 }
 
 export function writeNodeArray(): void {
-  for (let i: i32 = 0; i < nodeArrayLength; i++) {
-    const typedNode: Node = typedNodeArray[i];
-    typedNode.write(nodeArray, i);
-  }
+  nodeArraySerialiser().write(typedNodeArray);
 }
 
 export function initializeNodes(): void {
-  for (let i: i32 = 0; i < nodeArrayLength; i++) {
+  for (let i: i32 = 0; i < typedNodeArray.length; i++) {
     const node: Node = typedNodeArray[i];
     const radius: f64 = initialRadius * sqrt(i as f64)
     const angle: f64 = convert(i) * initialAngle;
@@ -143,21 +165,21 @@ export function initializeNodes(): void {
 
 export function center(x: f64, y: f64): void {
   let sx: f64 = 0, sy: f64 = 0;
-  for (let i: i32 = 0; i < nodeArrayLength; i++) {
+  for (let i: i32 = 0; i < typedNodeArray.length; i++) {
     sx = sx + typedNodeArray[i].x;
     sy = sy + typedNodeArray[i].y;
   }
-  sx = sx / convert(nodeArrayLength) - x;
-  sy = sy / convert(nodeArrayLength) - y;
-  for (let i: i32 = 0; i < nodeArrayLength; i++) {
+  sx = sx / convert(typedNodeArray.length) - x;
+  sy = sy / convert(typedNodeArray.length) - y;
+  for (let i: i32 = 0; i < typedNodeArray.length; i++) {
     typedNodeArray[i].x = typedNodeArray[i].x - sx;
     typedNodeArray[i].y = typedNodeArray[i].y - sy;
   }
 }
 
 export function manyBody(alpha: f64, strength: f64): void {
-  for (let i: i32 = 0; i < nodeArrayLength; i++) {
-    for (let j: i32 = 0; j < nodeArrayLength; j++) {
+  for (let i: i32 = 0; i < typedNodeArray.length; i++) {
+    for (let j: i32 = 0; j < typedNodeArray.length; j++) {
       if (i != j) {
         const nodeOne: Node = typedNodeArray[i];
         const nodeTwo: Node = typedNodeArray[j];
@@ -193,15 +215,15 @@ export function link(alpha: f64): void {
 }
 
 export function setNodeArrayLength(count: i32): void {
-  nodeArrayLength = count;
+  nodeArraySerialiser().initialise(count);
 }
 
 export function getNodeArrayLength(): i32 {
-  return nodeArrayLength;
+  return typedNodeArray.length;
 }
 
 export function getNodeArray(): Float64Array {
-  return nodeArray;
+  return nodeArraySerialiser().array;
 };
 
 export function setLinkArrayLength(count: i32): void {
