@@ -4,23 +4,37 @@ class Node  {
   vx: f64;
   vy: f64;
   links: f64;
-  constructor(x: f64, y: f64, vx: f64, vy: f64) {
-    this.x = x;
-    this.y = y;
-    this.vx = vx;
-    this.vy = vy;
-    this.links = 0;
+
+  static size: i32 = 4;
+
+  read(buffer: Float64Array, index: i32): void {
+    this.x = buffer[index * Node.size];
+    this.y = buffer[index * Node.size + 1];
+    this.vx = buffer[index * Node.size + 2];
+    this.vy = buffer[index * Node.size + 3];
+  }
+
+  write(buffer: Float64Array, index: i32): void {
+    buffer[index * Node.size] = this.x;
+    buffer[index * Node.size + 1] = this.y;
+    buffer[index * Node.size + 2] = this.vx;
+    buffer[index * Node.size + 3] = this.vy;
   }
 }
 
 class NodeLink {
+  sourceIndex: i32;
+  targetIndex: i32;
+
   source: Node;
   target: Node;
   bias: f64;
-  constructor(source: Node, target: Node) {
-    this.source = source;
-    this.target = target;
-    this.bias = 0;
+
+  static size: i32 = 2;
+
+  read(buffer: Uint32Array, index: i32): void {
+    this.sourceIndex = buffer[index * NodeLink.size];
+    this.targetIndex = buffer[index * NodeLink.size + 1];
   }
 }
 
@@ -72,27 +86,27 @@ let initialAngle: f64 = PI * (3.0 - sqrt(5.0));
 export function readNodeArray(): void {
   typedNodeArray = new Array<Node>(nodeArrayLength);
   for (let i: i32 = 0; i < nodeArrayLength; i++) {
-    const idx: i32 = i * 4;
-    const typedNode: Node = new Node(
-      nodeArray[idx] as f64,
-      nodeArray[idx + 1] as f64,
-      nodeArray[idx + 2] as f64,
-      nodeArray[idx + 3] as f64
-    );
+    const typedNode: Node = new Node()
+    typedNode.read(nodeArray, i);
     typedNodeArray[i] = typedNode;
   }
 
   typedLinkArray = new Array<NodeLink>(linkArrayLength);
   for (let i: i32 = 0; i < linkArrayLength; i++) {
-    const idx: i32 = i * 2;
-    const source: Node = typedNodeArray[linkArray[idx]];
-    const target: Node = typedNodeArray[linkArray[idx + 1]];
-    const typedLink: NodeLink = new NodeLink(source, target);    
+    const typedLink: NodeLink = new NodeLink();    
+    typedLink.read(linkArray, i);
     typedLinkArray[i] = typedLink;
+
+    // resolve the source / target indices to their respective nodes
+    typedLink.source = typedNodeArray[typedLink.sourceIndex];
+    typedLink.target = typedNodeArray[typedLink.targetIndex];
+
+    // update the node link count
     typedLink.source.links = typedLink.source.links + 1.0;
     typedLink.target.links = typedLink.target.links + 1.0;
   }
 
+  // compute the bia for each link
   for (let i: i32 = 0; i < linkArrayLength; i++) {
     const typedLink: NodeLink = typedLinkArray[i];
     typedLink.bias = typedLink.source.links / (typedLink.source.links + typedLink.target.links);
@@ -110,12 +124,8 @@ function convert(v: i32): f64 {
 
 export function writeNodeArray(): void {
   for (let i: i32 = 0; i < nodeArrayLength; i++) {
-    const idx: i32 = i * 4;
     const typedNode: Node = typedNodeArray[i];
-    nodeArray[idx] = typedNode.x;
-    nodeArray[idx + 1] = typedNode.y;
-    nodeArray[idx + 2] = typedNode.vx;
-    nodeArray[idx + 3] = typedNode.vy;
+    typedNode.write(nodeArray, i);
   }
 }
 
