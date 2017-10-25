@@ -74,21 +74,21 @@ function nodeArraySerialiser(): NodeArraySerialiser {
 let typedNodeArray: Array<Node>;
 
 class NodeLinkArraySerialiser {
-  // array: Uint32Array;
+  array: Uint32Array;
   count: i32 = 0;
 
   read(): Array<NodeLink> {
     let typedArray: Array<NodeLink> = new Array<NodeLink>(this.count);
     for (let i: i32 = 0; i < this.count; i++) {
       const item: NodeLink = new NodeLink();
-      item.read(linkArray, i);
+      item.read(this.array, i);
       typedArray[i] = item;
     }
     return typedArray;
   }
 
   initialise(count: i32): void {
-    linkArray = new Uint32Array(count * Node.size);
+    this.array = new Uint32Array(count * NodeLink.size);
     this.count = count;
   }
 }
@@ -100,7 +100,7 @@ function nodeArrayLinkSerialiser(): NodeLinkArraySerialiser {
   return node2[0];
 }
 
-let linkArray: Uint32Array = new Uint32Array(1000);
+// let linkArray: Uint32Array = new Uint32Array(1000);
 let typedLinkArray: Array<NodeLink>
 
 let PI: f64 = 3.141592653589793;
@@ -141,8 +141,6 @@ let initialAngle: f64 = PI * (3.0 - sqrt(5.0));
 
 export function readNodeArray(): void {
   typedNodeArray = nodeArraySerialiser().read();
-
-  
   typedLinkArray = nodeArrayLinkSerialiser().read();
 
   for (let i: i32 = 0; i < typedLinkArray.length; i++) {
@@ -261,5 +259,5 @@ export function getLinkArrayLength(): i32 {
 }
 
 export function getLinkArray(): Uint32Array {
-  return linkArray;
+  return nodeArrayLinkSerialiser().array;
 };
