@@ -73,8 +73,34 @@ function nodeArraySerialiser(): NodeArraySerialiser {
 
 let typedNodeArray: Array<Node>;
 
+class NodeLinkArraySerialiser {
+  // array: Uint32Array;
+  count: i32 = 0;
+
+  read(): Array<NodeLink> {
+    let typedArray: Array<NodeLink> = new Array<NodeLink>(this.count);
+    for (let i: i32 = 0; i < this.count; i++) {
+      const item: NodeLink = new NodeLink();
+      item.read(linkArray, i);
+      typedArray[i] = item;
+    }
+    return typedArray;
+  }
+
+  initialise(count: i32): void {
+    linkArray = new Uint32Array(count * Node.size);
+    this.count = count;
+  }
+}
+
+// bug: cannot just create a new NodeArraySerialiser()!!!
+let node2: Array<NodeLinkArraySerialiser> = new Array<NodeLinkArraySerialiser>(1);
+node2[0] = new NodeLinkArraySerialiser();
+function nodeArrayLinkSerialiser(): NodeLinkArraySerialiser {
+  return node2[0];
+}
+
 let linkArray: Uint32Array = new Uint32Array(1000);
-let linkArrayLength: i32;
 let typedLinkArray: Array<NodeLink>
 
 let PI: f64 = 3.141592653589793;
@@ -115,12 +141,12 @@ let initialAngle: f64 = PI * (3.0 - sqrt(5.0));
 
 export function readNodeArray(): void {
   typedNodeArray = nodeArraySerialiser().read();
+
   
-  typedLinkArray = new Array<NodeLink>(linkArrayLength);
-  for (let i: i32 = 0; i < linkArrayLength; i++) {
-    const typedLink: NodeLink = new NodeLink();    
-    typedLink.read(linkArray, i);
-    typedLinkArray[i] = typedLink;
+  typedLinkArray = nodeArrayLinkSerialiser().read();
+
+  for (let i: i32 = 0; i < typedLinkArray.length; i++) {
+    const typedLink: NodeLink = typedLinkArray[i];  
 
     // resolve the source / target indices to their respective nodes
     typedLink.source = typedNodeArray[typedLink.sourceIndex];
@@ -132,7 +158,7 @@ export function readNodeArray(): void {
   }
 
   // compute the bias for each link
-  for (let i: i32 = 0; i < linkArrayLength; i++) {
+  for (let i: i32 = 0; i < typedLinkArray.length; i++) {
     const typedLink: NodeLink = typedLinkArray[i];
     typedLink.bias = typedLink.source.links / (typedLink.source.links + typedLink.target.links);
   }
@@ -198,7 +224,7 @@ export function manyBody(alpha: f64, strength: f64): void {
 const distance: f64 = 30;
 
 export function link(alpha: f64): void {
-  for (let i: i32 = 0; i < linkArrayLength; i++) {
+  for (let i: i32 = 0; i < typedLinkArray.length; i++) {
     const link: NodeLink = typedLinkArray[i];
     let dx: f64 = link.target.x + link.target.vx - link.source.x - link.source.vx;
     let dy: f64 = link.target.y + link.target.vy - link.source.y - link.source.vy;
@@ -227,11 +253,11 @@ export function getNodeArray(): Float64Array {
 };
 
 export function setLinkArrayLength(count: i32): void {
-  linkArrayLength = count;
+  nodeArrayLinkSerialiser().initialise(count);
 }
 
 export function getLinkArrayLength(): i32 {
-  return linkArrayLength;;
+  return nodeArrayLinkSerialiser().count;
 }
 
 export function getLinkArray(): Uint32Array {
