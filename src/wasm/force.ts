@@ -1,4 +1,4 @@
-class Node  {
+export class Node  {
   x: f64;
   y: f64;
   vx: f64;
@@ -7,22 +7,24 @@ class Node  {
 
   static size: i32 = 4;
 
-  read(buffer: Float64Array, index: i32): void {
-    this.x = buffer[index * Node.size];
-    this.y = buffer[index * Node.size + 1];
-    this.vx = buffer[index * Node.size + 2];
-    this.vy = buffer[index * Node.size + 3];
+  static read(node: Node, buffer: Float64Array, index: i32): Node {
+    node.x = buffer[index * Node.size];
+    node.y = buffer[index * Node.size + 1];
+    node.vx = buffer[index * Node.size + 2];
+    node.vy = buffer[index * Node.size + 3];
+    return node;
   }
 
-  write(buffer: Float64Array, index: i32): void {
-    buffer[index * Node.size] = this.x;
-    buffer[index * Node.size + 1] = this.y;
-    buffer[index * Node.size + 2] = this.vx;
-    buffer[index * Node.size + 3] = this.vy;
+  static write(node: Node, buffer: Float64Array, index: i32): Node {
+    buffer[index * Node.size] = node.x;
+    buffer[index * Node.size + 1] = node.y;
+    buffer[index * Node.size + 2] = node.vx;
+    buffer[index * Node.size + 3] = node.vy;
+    return node;
   }
 }
 
-class NodeLink {
+export class NodeLink {
   sourceIndex: i32;
   targetIndex: i32;
 
@@ -32,9 +34,16 @@ class NodeLink {
 
   static size: i32 = 2;
 
-  read(buffer: Uint32Array, index: i32): void {
-    this.sourceIndex = buffer[index * NodeLink.size];
-    this.targetIndex = buffer[index * NodeLink.size + 1];
+  static read(nodeLink: NodeLink, buffer: Uint32Array, index: i32): NodeLink {
+    nodeLink.sourceIndex = buffer[index * NodeLink.size];
+    nodeLink.targetIndex = buffer[index * NodeLink.size + 1];
+    return nodeLink;
+  }
+
+  static write(nodeLink: NodeLink, buffer: Uint32Array, index: i32): NodeLink {
+    buffer[index * NodeLink.size] = nodeLink.sourceIndex;
+    buffer[index * NodeLink.size + 1] = nodeLink.targetIndex;
+    return nodeLink;
   }
 }
 
@@ -45,16 +54,14 @@ class NodeArraySerialiser {
   read(): Array<Node> {
     let typedArray: Array<Node> = new Array<Node>(this.count);
     for (let i: i32 = 0; i < this.count; i++) {
-      const item: Node = new Node();
-      item.read(this.array, i);
-      typedArray[i] = item;
+      typedArray[i] = Node.read(new Node(), this.array, i);
     }
     return typedArray;
   }
 
   write(typedArray: Array<Node>): void {
     for (let i: i32 = 0; i < this.count; i++) {
-      typedArray[i].write(this.array, i);
+      Node.write(typedArray[i], this.array, i);
     }
   }
 
@@ -80,9 +87,7 @@ class NodeLinkArraySerialiser {
   read(): Array<NodeLink> {
     let typedArray: Array<NodeLink> = new Array<NodeLink>(this.count);
     for (let i: i32 = 0; i < this.count; i++) {
-      const item: NodeLink = new NodeLink();
-      item.read(this.array, i);
-      typedArray[i] = item;
+      typedArray[i] = NodeLink.read(new NodeLink(), this.array, i);;
     }
     return typedArray;
   }
@@ -105,7 +110,7 @@ let typedLinkArray: Array<NodeLink>
 
 let PI: f64 = 3.141592653589793;
 
-export function sin(x: f64): f64 {
+function sin(x: f64): f64 {
   while (x < -PI) {
     x += PI * 2;
   } 
@@ -132,7 +137,7 @@ export function sin(x: f64): f64 {
   return sin;
 }
 
-export function cos(x: f64): f64 {
+function cos(x: f64): f64 {
   return sin(x - PI / 2);
 }
 

@@ -1,3 +1,5 @@
+import { NodeLink } from '../wasm/force';
+
 export const link: ForceFactory<LinkForce> = () => {
   let strength = -30;
   let nodes: any;
@@ -12,8 +14,12 @@ export const link: ForceFactory<LinkForce> = () => {
     links.forEach((link, index) => {
       const sourceIndex = nodes.findIndex(n => id(n) == link.source);
       const targetIndex = nodes.findIndex(n => id(n) == link.target);
-      linkBuffer[index * 2] = sourceIndex;
-      linkBuffer[index * 2 + 1] = targetIndex;
+      link.sourceIndex =  sourceIndex;
+      link.targetIndex =  targetIndex;
+      
+      NodeLink.write(link as NodeLink, linkBuffer, index);
+
+
       link.source = nodes[sourceIndex];
       link.target = nodes[targetIndex];
     });

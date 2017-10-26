@@ -1,5 +1,6 @@
 import { getAdaptedWasmCode } from './wasmAdapter';
 import * as force from '../wasm/force';
+import { Node }  from '../wasm/force';
 
 export const simulation: ForceSimulationFactory = (nodes, useWasm) => {
 
@@ -15,12 +16,7 @@ export const simulation: ForceSimulationFactory = (nodes, useWasm) => {
   const executeWasm = (wasmCode) => {
     
     let nodeBuffer = computer.getNodeArray();
-    nodes.forEach((node, index) => {
-      nodeBuffer[index * 4] = node.x;
-      nodeBuffer[index * 4 + 1] = node.y;
-      nodeBuffer[index * 4 + 2] = node.vx;
-      nodeBuffer[index * 4 + 3] = node.vy;
-    })
+    nodes.forEach((node, index) => Node.write(node as Node, nodeBuffer, index));
 
     computer.readNodeArray();
   
@@ -29,12 +25,7 @@ export const simulation: ForceSimulationFactory = (nodes, useWasm) => {
     computer.writeNodeArray();
 
     nodeBuffer = computer.getNodeArray();
-    nodes.forEach((node, index) => {
-      node.x = nodeBuffer[index * 4];
-      node.y = nodeBuffer[index * 4 + 1];
-      node.vx = nodeBuffer[index * 4 + 2];
-      node.vy = nodeBuffer[index * 4 + 3];
-    })
+    nodes.forEach((node, index) => Node.read(node as Node, nodeBuffer, index));
   };
 
   computer.setNodeArrayLength(nodes.length);

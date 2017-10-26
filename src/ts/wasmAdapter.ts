@@ -1,5 +1,7 @@
 import wasmCode from '../../build/force.wasm';
 
+import { Node, NodeLink } from '../wasm/force';
+
 let wasm: any;
 
 export const loaded = wasmCode()
@@ -41,12 +43,12 @@ export const getAdaptedWasmCode: (() => ForceLayoutComputer) = () => {
       if (name === 'getNodeArray') {
         return () => {
           const offset = wasm.getNodeArray();
-          return new Float64Array(wasm.memory.buffer, offset + 8, wasm.getNodeArrayLength() * 4);
+          return new Float64Array(wasm.memory.buffer, offset + 8, wasm.getNodeArrayLength() * Node.size);
         };
       } else if (name === 'getLinkArray') {
         return () => {
           const offset = wasm.getLinkArray();
-          return new Uint32Array(wasm.memory.buffer, offset + 8, wasm.getLinkArrayLength() * 4);
+          return new Uint32Array(wasm.memory.buffer, offset + 8, wasm.getLinkArrayLength() * NodeLink.size);
         }
       } else {
         return target[name];
