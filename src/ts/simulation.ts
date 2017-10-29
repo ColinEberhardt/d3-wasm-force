@@ -13,31 +13,34 @@ export const simulation: ForceSimulationFactory = (nodes, useWasm) => {
 
   const computer: ForceLayoutComputer = useWasm ?  getAdaptedWasmCode() : force;
 
+  // execute some WASM code, reading from / writing tolinear memory 
   const executeWasm = (wasmCode) => {
-    
+    // write the nodes to the WASM linear memory
     let nodeBuffer = computer.getNodeArray();
     nodes.forEach((node, index) => Node.write(node as Node, nodeBuffer, index));
 
-    computer.readNodeArray();
+    // read the values form linear memory
+    computer.readFromMemory();
   
     wasmCode();
     
-    computer.writeNodeArray();
+    // write back any updates
+    computer.writeToMemory();
 
+    // read back into the JS node array
     nodeBuffer = computer.getNodeArray();
     nodes.forEach((node, index) => Node.read(node as Node, nodeBuffer, index));
   };
 
   computer.setNodeArrayLength(nodes.length);
-  
-  executeWasm(() => {
+
+  executeWasm(() => {  
     computer.initializeNodes();
   });
   
   const simulation = <ForceSimulation> {};
 
   simulation.tick = () => {
-
     alpha += (alphaTarget - alpha) * alphaDecay;
 
     executeWasm(() => {

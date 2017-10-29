@@ -24,8 +24,8 @@ export const getAdaptedWasmCode: (() => ForceLayoutComputer) = () => {
   const wasm2 = {
     sin: wasm.sin,
     cos: wasm.cos,
-    readNodeArray: wasm.readNodeArray,
-    writeNodeArray: wasm.writeNodeArray,
+    readFromMemory: wasm.readFromMemory,
+    writeToMemory: wasm.writeToMemory,
     initializeNodes: wasm.initializeNodes,
     manyBody: wasm.manyBody,
     link: wasm.link,

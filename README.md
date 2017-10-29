@@ -1,6 +1,6 @@
 # d3-wasm-force
 
-A re-implementation of d3-force in WebAssembly with the AssemblyScript compiler.
+A re-implementation of d3-force in WebAssembly with the AssemblyScript compiler. Read more about the project in the [accompanying blog post](http://blog.scottlogic.com/2017/10/30/migrating-d3-force-layout-to-webassembly.html), and see the [code in action in this bl.ock](https://bl.ocks.org/ColinEberhardt/6ceb7ca74aabac9c8534d7120d31b382).
 
 ## Overview
 
@@ -42,8 +42,8 @@ const simulation = d3wasm.forceSimulation(graph.nodes, false)
 - [x] Create multiple typescript configurations
 - [x] Inline the code (note, could use rollup-plugin-wasm), although inline code is still async
 - [x] Resolve build-wasm warnings
-- [ ] Find a better way to read / write WASM buffers
+- [x] Find a better way to read / write WASM buffers
 - [ ] Make use of d3-force typing
 - [x] ensure the code behaves exactly the same as d3-force
-- [ ] implement the fx / fy properties of force layout
+- [x] implement the fx / fy properties of force layout
 

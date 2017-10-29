@@ -19,7 +19,6 @@ export const link: ForceFactory<LinkForce> = () => {
       
       NodeLink.write(link as NodeLink, linkBuffer, index);
 
-
       link.source = nodes[sourceIndex];
       link.target = nodes[targetIndex];
     });

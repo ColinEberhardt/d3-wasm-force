@@ -14,12 +14,13 @@
 <svg width='960' height='600'></svg>
 
 <script>
-   // TODO: does this need to be here?
    window.sqrt = Math.sqrt;
    window.min = Math.min;
 </script>
+
 <script src='build/bundle.js'></script>
 <script src='node_modules/d3/build/d3.js'></script>
+
 <script>
   var svg = d3.select('svg'),
     width = +svg.attr('width'),
@@ -71,8 +72,7 @@
               .attr('cy', d => d.y);
         }
       
-        setInterval(ticked, 50);
-        // ticked();
+        setInterval(ticked, 25);
         
         function dragstarted(d) {
           if (!d3.event.active) simulation.alphaTarget(0.3).restart();

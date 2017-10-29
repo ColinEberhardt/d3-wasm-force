@@ -15,8 +15,8 @@ interface ForceLayoutComputer {
   setLinkArrayLength: (number) => void;
   getLinkArrayLength: () => number;
 
-  readNodeArray: () => void;
-  writeNodeArray: () => void;
+  readFromMemory: () => void;
+  writeToMemory: () => void;
 
   initializeNodes: () => void;
   manyBody: (alpha: number, strength: number) => void;
